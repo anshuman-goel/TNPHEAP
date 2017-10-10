@@ -1,6 +1,9 @@
 *.mod.*
 *.o
 *.cmd
+*.so.*
 kernel_module/.tmp_versions/
 kernel_module/Module.symvers
 kernel_module/modules.order
+benchmark/benchmark
+benchmark/validate

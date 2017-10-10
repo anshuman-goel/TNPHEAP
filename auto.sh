@@ -1,6 +1,12 @@
 sudo rmmod npheap
 sudo rmmod tnpheap
-cd kernel_module
+cd ../CSC501_NPHEAP/kernel_module/
+make
+sudo make install
+cd ../library
+make
+sudo make install
+cd ../../CSC501_TNPHEAP/kernel_module
 make
 sudo make install
 sudo insmod ../NPHeap/npheap.ko

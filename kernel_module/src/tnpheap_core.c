@@ -49,10 +49,11 @@ struct miscdevice tnpheap_dev;
 __u64 tnpheap_get_version(struct tnpheap_cmd __user *user_cmd)
 {
     struct tnpheap_cmd cmd;
+    printk("Kern tnpheap_get_version\n");
     if (copy_from_user(&cmd, user_cmd, sizeof(cmd)))
     {
         return -1 ;
-    }    
+    }
     return 0;
 }
 
@@ -60,10 +61,11 @@ __u64 tnpheap_start_tx(struct tnpheap_cmd __user *user_cmd)
 {
     struct tnpheap_cmd cmd;
     __u64 ret=0;
+    printk("Kern tnpheap_start_tx\n");
     if (copy_from_user(&cmd, user_cmd, sizeof(cmd)))
     {
         return -1 ;
-    }    
+    }
     return ret;
 }
 
@@ -71,6 +73,7 @@ __u64 tnpheap_commit(struct tnpheap_cmd __user *user_cmd)
 {
     struct tnpheap_cmd cmd;
     __u64 ret=0;
+    printk("Kern tnpheap_commit\n");
     if (copy_from_user(&cmd, user_cmd, sizeof(cmd)))
     {
         return -1 ;

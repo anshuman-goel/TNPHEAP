@@ -13,29 +13,33 @@
 
 __u64 tnpheap_get_version(int npheap_dev, int tnpheap_dev, __u64 offset)
 {
-     return 0;
+        printf("Library tnpheap_get_version\n");
+        return 0;
 }
 
 
 
 int tnpheap_handler(int sig, siginfo_t *si)
 {
-    return 0;
+        printf("Library tnpheap_handler\n");
+        return 0;
 }
 
 
 void *tnpheap_alloc(int npheap_dev, int tnpheap_dev, __u64 offset, __u64 size)
 {
-    return NULL;     
+        printf("Library tnpheap_alloc\n");
+        return NULL;
 }
 
 __u64 tnpheap_start_tx(int npheap_dev, int tnpheap_dev)
 {
-    return 0;
+        printf("Library tnpheap_start_tx\n");
+        return 0;
 }
 
 int tnpheap_commit(int npheap_dev, int tnpheap_dev)
 {
-    return 0;
+        printf("Library tnpheap_commit\n");
+        return 0;
 }
-

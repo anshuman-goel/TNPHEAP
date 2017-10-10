@@ -7,3 +7,4 @@ kernel_module/Module.symvers
 kernel_module/modules.order
 benchmark/benchmark
 benchmark/validate
+kernel_module/tnpheap.ko

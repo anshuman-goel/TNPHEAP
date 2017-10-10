@@ -29,12 +29,16 @@ int tnpheap_handler(int sig, siginfo_t *si)
 void *tnpheap_alloc(int npheap_dev, int tnpheap_dev, __u64 offset, __u64 size)
 {
         printf("Library tnpheap_alloc\n");
+        //return npheap_alloc(npheap_dev, offset, size);
         return NULL;
 }
 
 __u64 tnpheap_start_tx(int npheap_dev, int tnpheap_dev)
 {
         printf("Library tnpheap_start_tx\n");
+        struct tnpheap_cmd cmd;
+        __u64 id = ioctl(tnpheap_dev, TNPHEAP_IOCTL_START_TX, &cmd);
+        printf("Transaction ID %lu\n", id);
         return 0;
 }
 

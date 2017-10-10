@@ -2,6 +2,7 @@
 *.o
 *.cmd
 *.so.*
+*.log
 kernel_module/.tmp_versions/
 kernel_module/Module.symvers
 kernel_module/modules.order

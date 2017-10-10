@@ -45,11 +45,13 @@
 #include <linux/time.h>
 
 struct miscdevice tnpheap_dev;
+DEFINE_MUTEX(lock);
+__u64 trxid=0;
 
 __u64 tnpheap_get_version(struct tnpheap_cmd __user *user_cmd)
 {
     struct tnpheap_cmd cmd;
-    printk("Kern tnpheap_get_version\n");
+    printk(KERN_ERR "Kern tnpheap_get_version\n");
     if (copy_from_user(&cmd, user_cmd, sizeof(cmd)))
     {
         return -1 ;
@@ -61,11 +63,16 @@ __u64 tnpheap_start_tx(struct tnpheap_cmd __user *user_cmd)
 {
     struct tnpheap_cmd cmd;
     __u64 ret=0;
-    printk("Kern tnpheap_start_tx\n");
+    printk(KERN_ERR "Kern tnpheap_start_tx\n");
     if (copy_from_user(&cmd, user_cmd, sizeof(cmd)))
     {
         return -1 ;
     }
+    mutex_lock(&lock);
+    trxid++;
+    ret=trxid;
+    mutex_unlock(&lock);
+    printk(KERN_ERR "Kern tnpheap_start_tx id %lu\n",ret);
     return ret;
 }
 
@@ -73,7 +80,7 @@ __u64 tnpheap_commit(struct tnpheap_cmd __user *user_cmd)
 {
     struct tnpheap_cmd cmd;
     __u64 ret=0;
-    printk("Kern tnpheap_commit\n");
+    printk(KERN_ERR "Kern tnpheap_commit\n");
     if (copy_from_user(&cmd, user_cmd, sizeof(cmd)))
     {
         return -1 ;
@@ -86,6 +93,7 @@ __u64 tnpheap_commit(struct tnpheap_cmd __user *user_cmd)
 __u64 tnpheap_ioctl(struct file *filp, unsigned int cmd,
                                 unsigned long arg)
 {
+    //printk(KERN_ERR "Kern tnpheap_ioctl\n");
     switch (cmd) {
     case TNPHEAP_IOCTL_START_TX:
         return tnpheap_start_tx((void __user *) arg);
@@ -113,10 +121,10 @@ static int __init tnpheap_module_init(void)
 {
     int ret = 0;
     if ((ret = misc_register(&tnpheap_dev)))
-        printk(KERN_ERR "Unable to register \"npheap\" misc device\n");
+        printk(KERN_ERR "Unable to register \"tnpheap\" misc device\n");
     else
-        printk(KERN_ERR "\"npheap\" misc device installed\n");
-    return 1;
+        printk(KERN_ERR "\"tnpheap\" misc device installed\n");
+    return 0;
 }
 
 static void __exit tnpheap_module_exit(void)

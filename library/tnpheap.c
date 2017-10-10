@@ -11,6 +11,8 @@
 #include <malloc.h>
 #include <string.h>
 
+void *buffer, *data;
+
 __u64 tnpheap_get_version(int npheap_dev, int tnpheap_dev, __u64 offset)
 {
         printf("Library tnpheap_get_version\n");
@@ -29,8 +31,12 @@ int tnpheap_handler(int sig, siginfo_t *si)
 void *tnpheap_alloc(int npheap_dev, int tnpheap_dev, __u64 offset, __u64 size)
 {
         printf("Library tnpheap_alloc\n");
-        //return npheap_alloc(npheap_dev, offset, size);
-        return NULL;
+        data = npheap_alloc(npheap_dev, offset, size);
+        printf("NPHeap alloc done\n");
+        buffer=calloc(1, size);
+        memcpy(buffer, data, size);
+        printf("Copied into buffer\n");
+        return buffer;
 }
 
 __u64 tnpheap_start_tx(int npheap_dev, int tnpheap_dev)

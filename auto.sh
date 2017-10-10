@@ -1,3 +1,4 @@
+rm *.log
 sudo rmmod npheap
 sudo rmmod tnpheap
 cd ../CSC501_NPHEAP/kernel_module/

@@ -55,7 +55,7 @@ void *tnpheap_alloc(int npheap_dev, int tnpheap_dev, __u64 offset, __u64 size)
           free(buffer);
         buffer=calloc(1, 8192);
         printf("Memcopy with size %lu vs %lu pid %lu\n", npheap_getsize(npheap_dev, offset), cmd.size, getpid());
-        memcpy(buffer, cmd.data, 8192);
+        //memcpy(buffer, cmd.data, 8192);
         //printf("Copied into buffer\n");
         return buffer;
 }
@@ -63,7 +63,8 @@ void *tnpheap_alloc(int npheap_dev, int tnpheap_dev, __u64 offset, __u64 size)
 __u64 tnpheap_start_tx(int npheap_dev, int tnpheap_dev)
 {
         printf("Library tnpheap_start_tx pid %lu\n", getpid());
-        return ioctl(tnpheap_dev, TNPHEAP_IOCTL_START_TX, &cmd);
+        __u64 id = ioctl(tnpheap_dev, TNPHEAP_IOCTL_START_TX, &cmd);
+        printf("Tranx id %lu for pid %lu\n", id, getpid());
 }
 
 int tnpheap_commit(int npheap_dev, int tnpheap_dev)

@@ -20,7 +20,7 @@ struct data_array_element
 
 int main(int argc, char *argv[])
 {
-    int i=0,number_of_processes=1, number_of_objects=1024, max_object_size = 65536,j; 
+    int i=0,number_of_processes=1, number_of_objects=1024, max_object_size = 65536,j;
     int a;
     int pid;
     int size;
@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
         i++;
     }
     while(i<(number_of_processes-1) && pid != 0);
-// Generate input data 
+// Generate input data
     srand((int)time(NULL)+(int)getpid());
     data_array = (struct data_array_element *)calloc(number_of_objects*2, sizeof(struct data_array_element));
     for(i = 0; i < number_of_objects; i++)
@@ -79,12 +79,14 @@ int main(int argc, char *argv[])
         }
     }
 
+    int iter=0;
     START_TX(npheap_dev, tnpheap_dev);
     for(i = 0; i < number_of_objects*2; i++)
     {
         if(data_array[i].size)
         {
             size = data_array[i].size;
+            printf("Benchmark offset %d and size %d\n", i, data_array[i].size);
             mapped_data = (char *)tnpheap_alloc(npheap_dev,tnpheap_dev,i,size);
             if(!mapped_data)
             {
@@ -95,8 +97,11 @@ int main(int argc, char *argv[])
             memcpy(mapped_data, data_array[i].data, data_array[i].size);
         }
     }
+      // if(++iter > 3)
+      //   exit(0);
     COMMIT(npheap_dev, tnpheap_dev);
     // print commit log
+    printf("Staring to write to file\n");
     pid=(int)getpid();
     sprintf(filename,"tnpheap.%d.log",pid);
     fp = fopen(filename,"w");
@@ -128,4 +133,3 @@ int main(int argc, char *argv[])
     exit(0);
     return 0;
 }
-

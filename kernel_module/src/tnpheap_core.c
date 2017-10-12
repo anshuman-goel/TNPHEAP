@@ -68,6 +68,7 @@ __u64 tnpheap_get_version(struct tnpheap_cmd __user *user_cmd)
     {
       if(temp->node->offset == user_cmd->offset)
       {
+        printk(KERN_ERR "Offset Found\n");
         mutex_unlock(&linklist);
         return temp->node->version;
       }
@@ -77,18 +78,21 @@ __u64 tnpheap_get_version(struct tnpheap_cmd __user *user_cmd)
     }
     if (temp==NULL)
     {
-      struct ll new;
-      new.node = &cmd;
-      new.next = NULL;
-      new.node->version = 0;
+      struct ll *new;
+      new = kzalloc(sizeof(struct ll), GFP_KERNEL);
+      new->node = &cmd;
+      new->next = NULL;
+      new->node->version = 0;
       //new.node->data = cmd.data;
       if(head==NULL)
       {
-        head=&new;
+        printk(KERN_ERR "New Head\n");
+        head=new;
       }
       else
       {
-        prev->next = &new;
+        prev->next = new;
+        printk(KERN_ERR "Node Inserted\n");
       }
     }
     mutex_unlock(&linklist);

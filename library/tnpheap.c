@@ -57,6 +57,7 @@ int tnpheap_commit(int npheap_dev, int tnpheap_dev)
         if (ioctl(tnpheap_dev, TNPHEAP_IOCTL_COMMIT, &cmd)==0)
         {
           memcpy(cmd.data, buffer, cmd.size);
+          return 0;
         }
-        return 0;
+        return 1;
 }

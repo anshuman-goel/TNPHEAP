@@ -50,8 +50,8 @@ DEFINE_MUTEX(linklist);
 __u64 trxid=0;
 struct ll
 {
-  tnpheap_cmd *node;
-  ll *next;
+  struct tnpheap_cmd *node;
+  struct ll *next;
 } *head=NULL;
 
 __u64 tnpheap_get_version(struct tnpheap_cmd __user *user_cmd)
@@ -63,7 +63,7 @@ __u64 tnpheap_get_version(struct tnpheap_cmd __user *user_cmd)
         return -1 ;
     }
     mutex_lock(&linklist);
-    ll *temp=head, *prev=NULL;
+    struct ll *temp=head, *prev=NULL;
     while(temp!=NULL)
     {
       if(temp->node->offset == user_cmd->offset)
@@ -78,9 +78,10 @@ __u64 tnpheap_get_version(struct tnpheap_cmd __user *user_cmd)
     if (temp==NULL)
     {
       struct ll new;
-      new->node = &cmd;
-      new->next = NULL;
-      new->version = 0;
+      new.node = &cmd;
+      new.next = NULL;
+      new.node->version = 0;
+      //new.node->data = cmd.data;
       if(head==NULL)
       {
         head=&new;
@@ -124,9 +125,9 @@ __u64 tnpheap_commit(struct tnpheap_cmd __user *user_cmd)
     struct ll *temp=head;
     while(temp!=NULL)
     {
-      if(temp->node->offset==cmd->offset)
+      if(temp->node->offset==cmd.offset)
       {
-        if(temp->node->version==cmd->version)
+        if(temp->node->version==cmd.version)
         {
           temp->node->version++;
           mutex_unlock(&linklist);

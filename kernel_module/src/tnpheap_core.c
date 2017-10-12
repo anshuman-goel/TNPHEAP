@@ -46,7 +46,13 @@
 
 struct miscdevice tnpheap_dev;
 DEFINE_MUTEX(lock);
+DEFINE_MUTEX(linklist);
 __u64 trxid=0;
+struct ll
+{
+  tnpheap_cmd *node;
+  ll *next;
+} *head=NULL;
 
 __u64 tnpheap_get_version(struct tnpheap_cmd __user *user_cmd)
 {
@@ -56,6 +62,35 @@ __u64 tnpheap_get_version(struct tnpheap_cmd __user *user_cmd)
     {
         return -1 ;
     }
+    mutex_lock(&linklist);
+    ll *temp=head, *prev=NULL;
+    while(temp!=NULL)
+    {
+      if(temp->node->offset == user_cmd->offset)
+      {
+        mutex_unlock(&linklist);
+        return temp->node->version;
+      }
+      prev = temp;
+      temp=temp->next;
+
+    }
+    if (temp==NULL)
+    {
+      struct ll new;
+      new->node = &cmd;
+      new->next = NULL;
+      new->version = 0;
+      if(head==NULL)
+      {
+        head=&new;
+      }
+      else
+      {
+        prev->next = &new;
+      }
+    }
+    mutex_unlock(&linklist);
     return 0;
 }
 
@@ -85,7 +120,22 @@ __u64 tnpheap_commit(struct tnpheap_cmd __user *user_cmd)
     {
         return -1 ;
     }
-    return ret;
+    mutex_lock(&linklist);
+    struct ll *temp=head;
+    while(temp!=NULL)
+    {
+      if(temp->node->offset==cmd->offset)
+      {
+        if(temp->node->version==cmd->version)
+        {
+          temp->node->version++;
+          mutex_unlock(&linklist);
+          return ret;
+        }
+      }
+    }
+    mutex_unlock(&linklist);
+    return 1;
 }
 
 

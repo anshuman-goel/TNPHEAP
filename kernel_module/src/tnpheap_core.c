@@ -25,8 +25,8 @@
 //   Author:
 //
 //	Anshuman Goel	agoel5
-//	Bhushan Thankur	bvthakur
-//	Zubin Thampi	zthampi
+//	Bhushan Thakur	bvthakur
+//	Zubin Thampi	zsthampi
 //
 //   Description:
 //     TNPHeap Pseudo Device

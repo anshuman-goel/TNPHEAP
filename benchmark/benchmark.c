@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
       //   exit(0);
     COMMIT(npheap_dev, tnpheap_dev);
     // print commit log
-    printf("Staring to write to file\n");
+    printf("Staring to write to file %d\n",getpid());
     pid=(int)getpid();
     sprintf(filename,"tnpheap.%d.log",pid);
     fp = fopen(filename,"w");
@@ -110,6 +110,7 @@ int main(int argc, char *argv[])
         if(data_array[i].size)
         {
             size = npheap_getsize(npheap_dev,i);
+            printf("Npheap size %lu pid =%d\n", size, getpid());
             mapped_data = (char *)tnpheap_alloc(npheap_dev,tnpheap_dev,i,size);
             if(!mapped_data)
             {

@@ -22,10 +22,14 @@
 //
 ////////////////////////////////////////////////////////////////////////
 //
-//   Author:  Hung-Wei Tseng
+//   Author:  
+//	
+//	Anshuman Goel	agoel5
+//	Bhushan Thankur	bvthakur
+//	Zubin Thampi	zthampi
 //
 //   Description:
-//     Skeleton of NPHeap Pseudo Device
+//     TNPHeap Pseudo Device
 //
 ////////////////////////////////////////////////////////////////////////
 
@@ -56,17 +60,21 @@ struct ll
 
 __u64 tnpheap_get_version(struct tnpheap_cmd __user *user_cmd)
 {
-    struct tnpheap_cmd cmd;
+    struct tnpheap_cmd *cmd;
+    struct ll *temp, *prev;
+    cmd = kzalloc(sizeof(struct tnpheap_cmd), GFP_KERNEL);
     printk(KERN_ERR "Kern tnpheap_get_version\n");
-    if (copy_from_user(&cmd, user_cmd, sizeof(cmd)))
+    if (copy_from_user(cmd, user_cmd, sizeof(cmd)))
     {
         return -1 ;
     }
     mutex_lock(&linklist);
-    struct ll *temp=head, *prev=NULL;
+    *temp=head;
+    *prev=NULL;
     while(temp!=NULL)
     {
-      if(temp->node->offset == user_cmd->offset)
+      printk("Looking at offset %lu\n", temp->node->offset);
+      if(temp->node->offset == cmd->offset)
       {
         printk(KERN_ERR "Offset Found\n");
         mutex_unlock(&linklist);
@@ -80,7 +88,7 @@ __u64 tnpheap_get_version(struct tnpheap_cmd __user *user_cmd)
     {
       struct ll *new;
       new = kzalloc(sizeof(struct ll), GFP_KERNEL);
-      new->node = &cmd;
+      new->node = cmd;
       new->next = NULL;
       new->node->version = 0;
       //new.node->data = cmd.data;

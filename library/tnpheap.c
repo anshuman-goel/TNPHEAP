@@ -92,7 +92,7 @@ void *tnpheap_alloc(int npheap_dev, int tnpheap_dev, __u64 offset, __u64 size)
           new->data = npheap_alloc(npheap_dev, offset, 8192);
         }
         //cmd.data =
-
+        //exit(0);
         return prev->next->cmd.data;
         // cmd.offset = offset;
         // cmd.size = size;
@@ -117,13 +117,36 @@ __u64 tnpheap_start_tx(int npheap_dev, int tnpheap_dev)
 int tnpheap_commit(int npheap_dev, int tnpheap_dev)
 {
         printf("Library tnpheap_commit pid %lu\n", getpid());
-        struct user_ll *temp=head;
+        struct user_ll *temp=head, *temp2=head;
+        //exit(0);
+        // Assuming all process requests the offset in same order which isn't.
+        // Acquire lock on all offsets using npheap_lock
         while(temp!=NULL)
         {
-          if (ioctl(tnpheap_dev, TNPHEAP_IOCTL_COMMIT, &(temp->cmd))==1)
-            return 1;
+          npheap_lock(npheap_dev, temp->cmd.offset);
+          temp = temp->next;
+        }
+        // Do commit work
+        temp=head;
+        while(temp!=NULL)
+        {
+            if (ioctl(tnpheap_dev, TNPHEAP_IOCTL_COMMIT, &(temp->cmd))==1)
+            {
+              while(temp2!=NULL)
+              {
+                npheap_lock(npheap_dev, temp2->cmd.offset);
+                temp2 = temp2->next;
+              }
+              return 1;
+            }
           memcpy(temp->data, temp->cmd.data, temp->cmd.size);
           temp = temp->next;
+        }
+        // Release lock
+        while(temp2!=NULL)
+        {
+          npheap_lock(npheap_dev, temp2->cmd.offset);
+          temp2 = temp2->next;
         }
         return 0;
         // printf("Offest for cmd %lu pid %lu\n", cmd.offset, getpid());

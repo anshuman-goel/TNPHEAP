@@ -44,6 +44,7 @@ __u64 tnpheap_get_version(int npheap_dev, int tnpheap_dev, __u64 offset)
         {
           if(temp->cmd.offset==offset)
           {
+            printf("offset found pid %lu\n", getpid());
             return ioctl(tnpheap_dev, TNPHEAP_IOCTL_GET_VERSION, &(temp->cmd));
           }
           temp = temp->next;
@@ -54,7 +55,8 @@ __u64 tnpheap_get_version(int npheap_dev, int tnpheap_dev, __u64 offset)
 
 int tnpheap_handler(int sig, siginfo_t *si)
 {
-        printf("Library tnpheap_handler\n");
+        printf("Library tnpheap_handler pid %lu\n", getpid());
+        exit(0);
         return 0;
 }
 
@@ -89,11 +91,16 @@ void *tnpheap_alloc(int npheap_dev, int tnpheap_dev, __u64 offset, __u64 size)
             prev->next=new;
           }
           new->cmd.version = tnpheap_get_version(npheap_dev, tnpheap_dev, offset);
-          new->data = npheap_alloc(npheap_dev, offset, 8192);
+          printf("version assigned pid %lu\n", getpid());
+          new->data = (void*)npheap_alloc(npheap_dev, offset, 8192);
+          printf("allocation done %lu\n", getpid());
         }
         //cmd.data =
         //exit(0);
+        if (prev!=NULL)
         return prev->next->cmd.data;
+        else
+        return head->cmd.data;
         // cmd.offset = offset;
         // cmd.size = size;
         // cmd.version = tnpheap_get_version(npheap_dev, tnpheap_dev, cmd.offset);

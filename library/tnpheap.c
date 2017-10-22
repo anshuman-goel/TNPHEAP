@@ -28,8 +28,6 @@ struct user_ll
 {
   struct tnpheap_cmd cmd;
   void *data;
-  // char buffer[8192];
-  // __u64 offset;
   struct user_ll *next;
 }*head=NULL;
 
@@ -69,6 +67,7 @@ void *tnpheap_alloc(int npheap_dev, int tnpheap_dev, __u64 offset, __u64 size)
         {
           if(temp->cmd.offset==offset)
           {
+            temp->cmd.version = tnpheap_get_version(npheap_dev, tnpheap_dev, offset);
             return temp->cmd.data;
           }
           prev = temp;
@@ -91,27 +90,14 @@ void *tnpheap_alloc(int npheap_dev, int tnpheap_dev, __u64 offset, __u64 size)
             prev->next=new;
           }
           new->cmd.version = tnpheap_get_version(npheap_dev, tnpheap_dev, offset);
-          //printf("version assigned pid %lu\n", getpid());
+          printf("version assigned %d pid %lu\n", new->cmd.version, getpid());
           new->data = (void*)npheap_alloc(npheap_dev, offset, 8192);
           //printf("allocation done %lu\n", getpid());
         }
-        //cmd.data =
-        //exit(0);
         if (prev!=NULL)
         return prev->next->cmd.data;
         else
         return head->cmd.data;
-        // cmd.offset = offset;
-        // cmd.size = size;
-        // cmd.version = tnpheap_get_version(npheap_dev, tnpheap_dev, cmd.offset);
-        // printf("Offset %lu of size %lu with version %lu pid %lu\n", cmd.offset, cmd.size, cmd.version, getpid());
-        // if(buffer!=NULL)
-        //   free(buffer);
-        // buffer=calloc(1, 8192);
-        // printf("Memcopy with size %lu vs %lu pid %lu\n", npheap_getsize(npheap_dev, offset), cmd.size, getpid());
-        // //memcpy(buffer, cmd.data, 8192);
-        // //printf("Copied into buffer\n");
-        // return buffer;
 }
 
 __u64 tnpheap_start_tx(int npheap_dev, int tnpheap_dev)
@@ -124,7 +110,6 @@ __u64 tnpheap_start_tx(int npheap_dev, int tnpheap_dev)
 int tnpheap_commit(int npheap_dev, int tnpheap_dev)
 {
         printf("Library tnpheap_commit pid %lu\n", getpid());
-        //exit(1);
         struct user_ll *temp=head, *temp2=head;
         //exit(0);
         // Assuming all process requests the offset in same order which isn't.
@@ -166,13 +151,4 @@ int tnpheap_commit(int npheap_dev, int tnpheap_dev)
         npheap_unlock(npheap_dev, head->cmd.offset);
         printf("All locks released pid %lu\n", getpid());
         return 0;
-        // printf("Offest for cmd %lu pid %lu\n", cmd.offset, getpid());
-        // if (ioctl(tnpheap_dev, TNPHEAP_IOCTL_COMMIT, &cmd)==0)
-        // {
-        //   printf("Updating value pid %lu\n",getpid());
-        //   memcpy(cmd.data, buffer, cmd.size);
-        //   return 0;
-        // }
-        // printf("Commit failed pid %lu\n", getpid());
-        // return 1;
 }

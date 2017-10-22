@@ -44,7 +44,7 @@ __u64 tnpheap_get_version(int npheap_dev, int tnpheap_dev, __u64 offset)
         {
           if(temp->cmd.offset==offset)
           {
-            printf("offset found pid %lu\n", getpid());
+            //printf("offset found pid %lu\n", getpid());
             return ioctl(tnpheap_dev, TNPHEAP_IOCTL_GET_VERSION, &(temp->cmd));
           }
           temp = temp->next;
@@ -63,7 +63,7 @@ int tnpheap_handler(int sig, siginfo_t *si)
 
 void *tnpheap_alloc(int npheap_dev, int tnpheap_dev, __u64 offset, __u64 size)
 {
-        printf("Library tnpheap_alloc pid %lu\n", getpid());
+        printf("Library tnpheap_alloc offset %d size %d pid %lu\n", offset, size, getpid());
         struct user_ll *temp=head, *prev=NULL;
         while(temp!=NULL)
         {
@@ -91,9 +91,9 @@ void *tnpheap_alloc(int npheap_dev, int tnpheap_dev, __u64 offset, __u64 size)
             prev->next=new;
           }
           new->cmd.version = tnpheap_get_version(npheap_dev, tnpheap_dev, offset);
-          printf("version assigned pid %lu\n", getpid());
+          //printf("version assigned pid %lu\n", getpid());
           new->data = (void*)npheap_alloc(npheap_dev, offset, 8192);
-          printf("allocation done %lu\n", getpid());
+          //printf("allocation done %lu\n", getpid());
         }
         //cmd.data =
         //exit(0);
@@ -124,37 +124,47 @@ __u64 tnpheap_start_tx(int npheap_dev, int tnpheap_dev)
 int tnpheap_commit(int npheap_dev, int tnpheap_dev)
 {
         printf("Library tnpheap_commit pid %lu\n", getpid());
+        //exit(1);
         struct user_ll *temp=head, *temp2=head;
         //exit(0);
         // Assuming all process requests the offset in same order which isn't.
         // Acquire lock on all offsets using npheap_lock
-        while(temp!=NULL)
-        {
-          npheap_lock(npheap_dev, temp->cmd.offset);
-          temp = temp->next;
-        }
+        // while(temp!=NULL)
+        // {
+        //   printf("Lock acquire for offset %d pid %d\n", temp->cmd.offset, getpid());
+        //   npheap_lock(npheap_dev, temp->cmd.offset);
+        //   printf("Lock acquired for offset %d pid %d\n", temp->cmd.offset, getpid());
+        //   temp = temp->next;
+        // }
+        npheap_lock(npheap_dev, head->cmd.offset);
+        printf("All locks acquired pid %lu\n", getpid());
         // Do commit work
         temp=head;
         while(temp!=NULL)
         {
             if (ioctl(tnpheap_dev, TNPHEAP_IOCTL_COMMIT, &(temp->cmd))==1)
             {
-              while(temp2!=NULL)
-              {
-                npheap_lock(npheap_dev, temp2->cmd.offset);
-                temp2 = temp2->next;
-              }
+              // while(temp2!=NULL)
+              // {
+              //   npheap_unlock(npheap_dev, temp2->cmd.offset);
+              //   temp2 = temp2->next;
+              // }
+              npheap_unlock(npheap_dev, head->cmd.offset);
+              printf("All locks released pid %lu\n", getpid());
               return 1;
             }
+            printf("memcpy for offset %d pid %d\n", temp->cmd.offset, getpid());
           memcpy(temp->data, temp->cmd.data, temp->cmd.size);
           temp = temp->next;
         }
         // Release lock
-        while(temp2!=NULL)
-        {
-          npheap_lock(npheap_dev, temp2->cmd.offset);
-          temp2 = temp2->next;
-        }
+        // while(temp2!=NULL)
+        // {
+        //   npheap_unlock(npheap_dev, temp2->cmd.offset);
+        //   temp2 = temp2->next;
+        // }
+        npheap_unlock(npheap_dev, head->cmd.offset);
+        printf("All locks released pid %lu\n", getpid());
         return 0;
         // printf("Offest for cmd %lu pid %lu\n", cmd.offset, getpid());
         // if (ioctl(tnpheap_dev, TNPHEAP_IOCTL_COMMIT, &cmd)==0)

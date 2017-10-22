@@ -64,6 +64,8 @@ int main(int argc, char *argv[])
     for(i = 0; i < number_of_objects; i++)
     {
         object_id = rand()%(number_of_objects*2);
+        //printf("Benchmark objectid %d for %lu\n", object_id, getpid());
+        //break;
         while(size == 0 || size <= 10)
         {
             size = rand()%(max_object_size);
@@ -86,7 +88,7 @@ int main(int argc, char *argv[])
         if(data_array[i].size)
         {
             size = data_array[i].size;
-            printf("Benchmark offset %d and size %d\n", i, data_array[i].size);
+            printf("Benchmark offset %d and size %d for %lu\n", i, data_array[i].size, getpid());
             mapped_data = (char *)tnpheap_alloc(npheap_dev,tnpheap_dev,i,size);
             if(!mapped_data)
             {
@@ -98,7 +100,7 @@ int main(int argc, char *argv[])
         }
     }
       // if(++iter > 3)
-      //   exit(0);
+        //  exit(0);
     COMMIT(npheap_dev, tnpheap_dev);
     // print commit log
     printf("Staring to write to file %d\n",getpid());
@@ -112,12 +114,15 @@ int main(int argc, char *argv[])
             size = npheap_getsize(npheap_dev,i);
             printf("Npheap size %lu pid =%d\n", size, getpid());
             mapped_data = (char *)tnpheap_alloc(npheap_dev,tnpheap_dev,i,size);
+            printf("if condition %lu pid =%d\n", size, getpid());
             if(!mapped_data)
             {
                 fprintf(stderr,"Failed in npheap_alloc()\n");
                 exit(1);
             }
+            printf("memset %lu pid =%d\n", size, getpid());
             memset(mapped_data, 0, data_array[i].size);
+            printf("memcopy %lu pid =%d\n", size, getpid());
             memcpy(mapped_data, data_array[i].data, data_array[i].size);
             fprintf(fp,"S\t%d\t%llu\t%d\t%lu\t%s\n",pid,current_tx,i,strlen(data_array[i].data),data_array[i].data);
         }

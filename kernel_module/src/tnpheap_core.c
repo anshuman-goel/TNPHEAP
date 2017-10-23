@@ -51,7 +51,9 @@
 struct miscdevice tnpheap_dev;
 DEFINE_MUTEX(lock);
 DEFINE_MUTEX(linklist);
+// DEFINE_MUTEX(commit_lock);
 __u64 trxid=0;
+// __u64 commitid=0;
 struct ll
 {
   struct tnpheap_cmd *node;
@@ -70,7 +72,6 @@ __u64 tnpheap_get_version(struct tnpheap_cmd __user *user_cmd)
     }
     printk(KERN_ERR "Mutex lock needed\n");
     mutex_lock(&linklist);
-    //printk(KERN_ERR "Mutex lock acquired\n");
     temp=head;
     prev=NULL;
     while(temp!=NULL)
@@ -93,10 +94,7 @@ __u64 tnpheap_get_version(struct tnpheap_cmd __user *user_cmd)
       new->node = cmd;
       new->next = NULL;
       printk(KERN_ERR "offset %lu added\n", cmd->offset);
-      // new->node->offset = cmd->offset;
-      // new->node->size = cmd->size;
       new->node->version = 0;
-      //new.node->data = cmd.data;
       if(head==NULL)
       {
         printk(KERN_ERR "New Head\n");
@@ -117,7 +115,7 @@ __u64 tnpheap_start_tx(struct tnpheap_cmd __user *user_cmd)
 {
     struct tnpheap_cmd cmd;
     __u64 ret=0;
-    printk(KERN_ERR "Kern tnpheap_start_tx\n");
+    //printk(KERN_ERR "Kern tnpheap_start_tx\n");
     if (copy_from_user(&cmd, user_cmd, sizeof(cmd)))
     {
         return -1 ;
@@ -140,6 +138,14 @@ __u64 tnpheap_commit(struct tnpheap_cmd __user *user_cmd)
     {
         return -1 ;
     }
+    // mutex_lock(&commit_lock);
+    // if(commitid>cmd.txid)
+    // {
+    //   mutex_unlock(&commit_lock);
+    //   return 1;
+    // }
+    // commitid = cmd.txid;
+    // mutex_unlock(&commit_lock);
     mutex_lock(&linklist);
     temp=head;
     while(temp!=NULL)
@@ -154,6 +160,11 @@ __u64 tnpheap_commit(struct tnpheap_cmd __user *user_cmd)
           printk(KERN_ERR "Commit lock released for offset %lu with new version as %lu\n", temp->node->offset, temp->node->version);
           mutex_unlock(&linklist);
           return 0;
+        }
+        else
+        {
+          mutex_unlock(&linklist);
+          return 1;
         }
       }
       temp = temp->next;

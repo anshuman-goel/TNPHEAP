@@ -186,7 +186,7 @@ int tnpheap_commit_lock(struct tnpheap_cmd __user *user_cmd)
 
 int tnpheap_commit_unlock(struct tnpheap_cmd __user *user_cmd)
 {
-  printk(KERN_ERR "Lock acquired\n");
+  printk(KERN_ERR "Lock released\n");
   mutex_unlock(&commit_lock);
   return 0;
 }

@@ -226,9 +226,9 @@ static int __init tnpheap_module_init(void)
 {
     int ret = 0;
     if ((ret = misc_register(&tnpheap_dev)))
-       //printk(KERN_ERR "Unable to register \"tnpheap\" misc device\n");
+       printk(KERN_ERR "Unable to register \"tnpheap\" misc device\n");
     else
-       //printk(KERN_ERR "\"tnpheap\" misc device installed\n");
+       printk(KERN_ERR "\"tnpheap\" misc device installed\n");
     return 0;
 }
 

@@ -48,6 +48,9 @@
 #include <linux/mutex.h>
 #include <linux/time.h>
 
+#define TNPHEAP_IOCTL_COMMIT_LOCK  _IOWR('N', 0x50, struct tnpheap_cmd)
+#define TNPHEAP_IOCTL_COMMIT_UNLOCK  _IOWR('N', 0x51, struct tnpheap_cmd)
+
 struct miscdevice tnpheap_dev;
 DEFINE_MUTEX(lock);
 DEFINE_MUTEX(linklist);

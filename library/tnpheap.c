@@ -24,6 +24,9 @@
 #include <malloc.h>
 #include <string.h>
 
+#define TNPHEAP_IOCTL_COMMIT_LOCK  _IOWR('N', 0x50, struct tnpheap_cmd)
+#define TNPHEAP_IOCTL_COMMIT_UNLOCK  _IOWR('N', 0x51, struct tnpheap_cmd)
+
 struct user_ll
 {
   struct tnpheap_cmd cmd;
@@ -122,7 +125,7 @@ int tnpheap_commit(int npheap_dev, int tnpheap_dev)
         //   temp = temp->next;
         // }
         // npheap_lock(npheap_dev, head->cmd.offset);
-        ioctl(tnpheap_dev, 50, &(cmd));
+        ioctl(tnpheap_dev, TNPHEAP_IOCTL_COMMIT_LOCK, &(cmd));
        printf("All locks acquired head %lu pid %lu\n", head->cmd.offset, getpid());
         // Do commit work
         temp=head;
@@ -136,7 +139,7 @@ int tnpheap_commit(int npheap_dev, int tnpheap_dev)
               //   temp2 = temp2->next;
               // }
               // npheap_unlock(npheap_dev, head->cmd.offset);
-              ioctl(tnpheap_dev, 51, &(cmd));
+              ioctl(tnpheap_dev, TNPHEAP_IOCTL_COMMIT_UNLOCK, &(cmd));
              printf("All locks released pid %lu\n", getpid());
               return 1;
             }
@@ -152,7 +155,7 @@ int tnpheap_commit(int npheap_dev, int tnpheap_dev)
         //   temp2 = temp2->next;
         // }
         // npheap_unlock(npheap_dev, head->cmd.offset);
-        ioctl(tnpheap_dev, 51, &(cmd));
+        ioctl(tnpheap_dev, TNPHEAP_IOCTL_COMMIT_UNLOCK, &(cmd));
         printf("Commit pid %lu\n", getpid());
         return 0;
 }

@@ -1,3 +1,6 @@
+trace
+sorted_trace
+*.swp
 *.mod.*
 *.o
 *.cmd

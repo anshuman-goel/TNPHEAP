@@ -139,9 +139,9 @@ int tnpheap_commit(int npheap_dev, int tnpheap_dev)
               //   temp2 = temp2->next;
               // }
               // npheap_unlock(npheap_dev, head->cmd.offset);
-              ioctl(tnpheap_dev, TNPHEAP_IOCTL_COMMIT_UNLOCK, &(cmd));
-             printf("All locks released pid %lu\n", getpid());
-              return 1;
+             printf("All locks released pid %lu\n", getpid()); 
+	     ioctl(tnpheap_dev, TNPHEAP_IOCTL_COMMIT_UNLOCK, &(cmd));
+             return 1;
             }
           //printf("memcpy for offset %d pid %d\n", temp->cmd.offset, getpid());
           memcpy(temp->data, temp->cmd.data, 8192);
@@ -155,7 +155,7 @@ int tnpheap_commit(int npheap_dev, int tnpheap_dev)
         //   temp2 = temp2->next;
         // }
         // npheap_unlock(npheap_dev, head->cmd.offset);
-        ioctl(tnpheap_dev, TNPHEAP_IOCTL_COMMIT_UNLOCK, &(cmd));
         printf("Commit pid %lu\n", getpid());
+	ioctl(tnpheap_dev, TNPHEAP_IOCTL_COMMIT_UNLOCK, &(cmd));
         return 0;
 }

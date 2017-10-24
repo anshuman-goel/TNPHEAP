@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
     }
     COMMIT(npheap_dev, tnpheap_dev);
     // print commit log
-    printf("Staring to write to file %d\n",getpid());
+    printf("Starting to write to file %d\n",getpid());
     pid=(int)getpid();
     sprintf(filename,"tnpheap.%d.log",pid);
     fp = fopen(filename,"w");

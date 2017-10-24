@@ -51,7 +51,7 @@
 struct miscdevice tnpheap_dev;
 DEFINE_MUTEX(lock);
 DEFINE_MUTEX(linklist);
-// DEFINE_MUTEX(commit_lock);
+DEFINE_MUTEX(commit_lock);
 __u64 trxid=0;
 // __u64 commitid=0;
 struct ll
@@ -174,7 +174,17 @@ __u64 tnpheap_commit(struct tnpheap_cmd __user *user_cmd)
     return 1;
 }
 
+int tnpheap_commit_lock(struct tnpheap_cmd __user *user_cmd)
+{
+  mutex_lock(&commit_lock);
+  return 0;
+}
 
+int tnpheap_commit_unlock(struct tnpheap_cmd __user *user_cmd)
+{
+  mutex_unlock(&commit_lock);
+  return 0;
+}
 
 __u64 tnpheap_ioctl(struct file *filp, unsigned int cmd,
                                 unsigned long arg)
@@ -187,6 +197,10 @@ __u64 tnpheap_ioctl(struct file *filp, unsigned int cmd,
         return tnpheap_get_version((void __user *) arg);
     case TNPHEAP_IOCTL_COMMIT:
         return tnpheap_commit((void __user *) arg);
+    case 50:
+        return tnpheap_commit_lock((void __user *) arg);
+    case 51:
+        return tnpheap_commit_unlock((void __user *) arg);
     default:
         return -ENOTTY;
     }

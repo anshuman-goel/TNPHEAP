@@ -121,7 +121,8 @@ int tnpheap_commit(int npheap_dev, int tnpheap_dev)
         //   // printf("Lock acquired for offset %d pid %d\n", temp->cmd.offset, getpid());
         //   temp = temp->next;
         // }
-        npheap_lock(npheap_dev, head->cmd.offset);
+        // npheap_lock(npheap_dev, head->cmd.offset);
+        ioctl(tnpheap_dev, 50, &(cmd));
        printf("All locks acquired head %lu pid %lu\n", head->cmd.offset, getpid());
         // Do commit work
         temp=head;
@@ -134,7 +135,8 @@ int tnpheap_commit(int npheap_dev, int tnpheap_dev)
               //   npheap_unlock(npheap_dev, temp2->cmd.offset);
               //   temp2 = temp2->next;
               // }
-              npheap_unlock(npheap_dev, head->cmd.offset);
+              // npheap_unlock(npheap_dev, head->cmd.offset);
+              ioctl(tnpheap_dev, 51, &(cmd));
              printf("All locks released pid %lu\n", getpid());
               return 1;
             }
@@ -149,7 +151,8 @@ int tnpheap_commit(int npheap_dev, int tnpheap_dev)
         //   npheap_unlock(npheap_dev, temp2->cmd.offset);
         //   temp2 = temp2->next;
         // }
-        npheap_unlock(npheap_dev, head->cmd.offset);
+        // npheap_unlock(npheap_dev, head->cmd.offset);
+        ioctl(tnpheap_dev, 51, &(cmd));
         printf("Commit pid %lu\n", getpid());
         return 0;
 }

@@ -10,7 +10,7 @@
 
 int main(int argc, char *argv[])
 {
-    int i=0,number_of_threads = 1, number_of_objects=1024, max_size_of_objects=8192; 
+    int i=0,number_of_threads = 1, number_of_objects=1024, max_size_of_objects=8192;
     int tid;
     long size;
     __u64 object_id;
@@ -42,9 +42,9 @@ int main(int argc, char *argv[])
             strcpy(obj[(int)object_id],data);
             memset(data,0,max_size_of_objects);
         } else if (op == 'G') {
-            if (strcmp(obj[(int)object_id], data)) {   
+            if (strcmp(obj[(int)object_id], data)) {
                 fprintf(stderr, "%d: Key %d has a wrong value %s v.s. %s\n",tid,(int)object_id,data,obj[(int)object_id]);
-                error++; 
+                error++;
             }
         }
         else if (op == 'D') {
@@ -87,4 +87,3 @@ int main(int argc, char *argv[])
     close(devfd);
     return 0;
 }
-

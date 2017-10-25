@@ -95,6 +95,10 @@ int main(int argc, char *argv[])
             }
             memset(mapped_data, 0, data_array[i].size);
             memcpy(mapped_data, data_array[i].data, data_array[i].size);
+            if (strcmp(mapped_data, data_array[i].data)!=0)
+            {
+              printf("B2 Data not matched for offset %d pid %lu\n", i, getpid());
+            }
         }
     }
     COMMIT(npheap_dev, tnpheap_dev);

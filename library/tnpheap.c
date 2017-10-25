@@ -31,6 +31,7 @@ struct user_ll
 {
   struct tnpheap_cmd cmd;
   void *data;
+  char buffer[8192];
   struct user_ll *next;
 }*head=NULL;
 
@@ -70,7 +71,9 @@ void *tnpheap_alloc(int npheap_dev, int tnpheap_dev, __u64 offset, __u64 size)
           if(temp->cmd.offset==offset)
           {
             temp->cmd.version = tnpheap_get_version(npheap_dev, tnpheap_dev, offset);
-            return temp->cmd.data;
+            // memcpy(temp->cmd.data, temp->data, 8192);
+            //return temp->cmd.data;
+            return temp->buffer;
           }
           prev = temp;
           temp = temp->next;
@@ -80,7 +83,7 @@ void *tnpheap_alloc(int npheap_dev, int tnpheap_dev, __u64 offset, __u64 size)
           struct user_ll *new;
           new = (struct user_ll*)malloc(sizeof(struct user_ll));
           new->cmd.offset = offset;
-          new->cmd.data = (char*)malloc(8192*sizeof(char));
+          //new->cmd.data = (char*)malloc(8192*sizeof(char));
           new->cmd.size = size;
           new->next = NULL;
           if(head==NULL)
@@ -94,17 +97,26 @@ void *tnpheap_alloc(int npheap_dev, int tnpheap_dev, __u64 offset, __u64 size)
           new->cmd.version = tnpheap_get_version(npheap_dev, tnpheap_dev, offset);
       //    printf("version assigned %d pid %lu\n", new->cmd.version, getpid());
           new->data = npheap_alloc(npheap_dev, offset, 8192);
+          //memset(new->data,0,8192);
+          // memcpy(temp->cmd.data,new->data, 8192);
           //printf("allocation done %lu\n", getpid());
         }
         if (prev!=NULL)
-        return prev->next->cmd.data;
+        {
+          //return prev->next->cmd.data;
+          return prev->next->buffer;
+        }
         else
-        return head->cmd.data;
+        {
+          //return head->cmd.data;
+          return head->buffer;
+        }
 }
 
 __u64 tnpheap_start_tx(int npheap_dev, int tnpheap_dev)
 {
     //    printf("Library tnpheap_start_tx pid %lu\n", getpid());
+      ioctl(tnpheap_dev, TNPHEAP_IOCTL_COMMIT_LOCK, &(cmd));
         txid = ioctl(tnpheap_dev, TNPHEAP_IOCTL_START_TX, &cmd);
         printf("Tranx id %lu for pid %lu\n", txid, getpid());
         return txid;
@@ -125,7 +137,7 @@ int tnpheap_commit(int npheap_dev, int tnpheap_dev)
         //   temp = temp->next;
         // }
         // npheap_lock(npheap_dev, head->cmd.offset);
-        ioctl(tnpheap_dev, TNPHEAP_IOCTL_COMMIT_LOCK, &(cmd));
+        // ioctl(tnpheap_dev, TNPHEAP_IOCTL_COMMIT_LOCK, &(cmd));
        printf("All locks acquired head %lu pid %lu\n", head->cmd.offset, getpid());
         // Do commit work
         temp=head;
@@ -139,12 +151,28 @@ int tnpheap_commit(int npheap_dev, int tnpheap_dev)
               //   temp2 = temp2->next;
               // }
               // npheap_unlock(npheap_dev, head->cmd.offset);
-             printf("All locks released pid %lu\n", getpid()); 
+             printf("All locks released pid %lu\n", getpid());
 	     ioctl(tnpheap_dev, TNPHEAP_IOCTL_COMMIT_UNLOCK, &(cmd));
              return 1;
             }
           //printf("memcpy for offset %d pid %d\n", temp->cmd.offset, getpid());
-          memcpy(temp->data, temp->cmd.data, 8192);
+          //memcpy(temp->data, temp->cmd.data, temp->cmd.size);
+            //memcpy(temp->data, temp->buffer, 8192);
+          memcpy(npheap_alloc(npheap_dev, temp->cmd.offset, 8192), temp->buffer, 8192);
+          int try=1000;
+          while(try>0)
+          {
+            if (strcmp(npheap_alloc(npheap_dev, temp->cmd.offset, 8192), temp->buffer)!=0)
+            {
+              memcpy(npheap_alloc(npheap_dev, temp->cmd.offset, 8192), temp->buffer, 8192);
+              printf("Data not matched for offset %d pid %lu\n", temp->cmd.offset, getpid());
+              try--;
+            }
+            else
+              break;
+        }
+          // saving data in
+          //memcpy(temp->cmd.data, temp->data, 8192);
           temp = temp->next;
         }
         // Release lock
@@ -156,6 +184,6 @@ int tnpheap_commit(int npheap_dev, int tnpheap_dev)
         // }
         // npheap_unlock(npheap_dev, head->cmd.offset);
         printf("Commit pid %lu\n", getpid());
-	ioctl(tnpheap_dev, TNPHEAP_IOCTL_COMMIT_UNLOCK, &(cmd));
+	       ioctl(tnpheap_dev, TNPHEAP_IOCTL_COMMIT_UNLOCK, &(cmd));
         return 0;
 }

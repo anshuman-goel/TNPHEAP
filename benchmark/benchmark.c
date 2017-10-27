@@ -34,6 +34,7 @@ int main(int argc, char *argv[])
     unsigned long long msec_time;
     FILE *fp;
     struct timeval current_time;
+    // struct timespec current_time;//current_time;
 
     if(argc < 3)
     {
@@ -102,8 +103,11 @@ int main(int argc, char *argv[])
         }
     }
     COMMIT(npheap_dev, tnpheap_dev);
+    // clock_gettime(CLOCK_PROCESS_CPU_TIME_ID, &current_time);
+    gettimeofday(&current_time,NULL);
+    msec_time = current_time.tv_usec + current_time.tv_sec*1000000;
     // print commit log
-    printf("Starting to write to file %d\n",getpid());
+    printf("Starting to write to file %d at time %llu\n",getpid(), msec_time);
     pid=(int)getpid();
     sprintf(filename,"tnpheap.%d.log",pid);
     fp = fopen(filename,"w");
@@ -121,14 +125,15 @@ int main(int argc, char *argv[])
                 exit(1);
             }
             //printf("memset %lu pid =%d\n", size, getpid());
-            memset(mapped_data, 0, data_array[i].size);
+            //memset(mapped_data, 0, data_array[i].size);
             //printf("memcopy %lu pid =%d\n", size, getpid());
-            memcpy(mapped_data, data_array[i].data, data_array[i].size);
-            fprintf(fp,"S\t%d\t%llu\t%d\t%lu\t%s\n",pid,current_tx,i,strlen(data_array[i].data),data_array[i].data);
-            // fprintf(fp,"S\t%d\t%llu\t%d\t%lu\t%s\n",pid,current_tx,i,strlen(mapped_data),mapped_data);
+            //memcpy(mapped_data, data_array[i].data, data_array[i].size);
+            fprintf(fp,"S\t%d\t%llu\t%d\t%lu\t%s\n",pid,msec_time,i,strlen(data_array[i].data),data_array[i].data);
+            //fprintf(fp,"S\t%d\t%llu\t%d\t%lu\t%s\n",pid,msec_time,i,strlen(mapped_data),mapped_data);
         }
     }
 
+    printf("Written to file %d\n",getpid() );
     close(npheap_dev);
     close(tnpheap_dev);
     fclose(fp);

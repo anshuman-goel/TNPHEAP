@@ -48,6 +48,8 @@
 #include <linux/mutex.h>
 #include <linux/time.h>
 
+#include <linux/sched.h>
+
 #define TNPHEAP_IOCTL_COMMIT_LOCK  _IOWR('N', 0x50, struct tnpheap_cmd)
 #define TNPHEAP_IOCTL_COMMIT_UNLOCK  _IOWR('N', 0x51, struct tnpheap_cmd)
 
@@ -180,7 +182,7 @@ __u64 tnpheap_commit(struct tnpheap_cmd __user *user_cmd)
 int tnpheap_commit_lock(struct tnpheap_cmd __user *user_cmd)
 {
   mutex_lock(&commit_lock);
-  printk(KERN_ERR "Lock acquired\n");
+  printk(KERN_ERR "Lock acquired %d\n", task_pid_nr(current));
   return 0;
 }
 

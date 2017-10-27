@@ -58,7 +58,6 @@ DEFINE_MUTEX(lock);
 DEFINE_MUTEX(linklist);
 DEFINE_MUTEX(commit_lock);
 __u64 trxid=0;
-// __u64 commitid=0;
 struct ll
 {
   struct tnpheap_cmd *node;
@@ -70,21 +69,17 @@ __u64 tnpheap_get_version(struct tnpheap_cmd __user *user_cmd)
     struct tnpheap_cmd *cmd;
     struct ll *temp, *prev;
     cmd = kzalloc(sizeof(struct tnpheap_cmd), GFP_KERNEL);
-   //printk(KERN_ERR "Kern tnpheap_get_version\n");
     if (copy_from_user(cmd, user_cmd, sizeof(struct tnpheap_cmd)))
     {
         return -1 ;
     }
-   //printk(KERN_ERR "Mutex lock needed\n");
     mutex_lock(&linklist);
     temp=head;
     prev=NULL;
     while(temp!=NULL)
     {
-     //printk("Looking at offset %lu for cmd offset %lu\n", temp->node->offset, user_cmd->offset);
       if(temp->node->offset == cmd->offset)
       {
-       //printk(KERN_ERR "Offset Found\n");
         mutex_unlock(&linklist);
         return temp->node->version;
       }
@@ -98,20 +93,16 @@ __u64 tnpheap_get_version(struct tnpheap_cmd __user *user_cmd)
       new = kzalloc(sizeof(struct ll), GFP_KERNEL);
       new->node = cmd;
       new->next = NULL;
-     //printk(KERN_ERR "offset %lu added\n", cmd->offset);
       new->node->version = 0;
       if(head==NULL)
       {
-       //printk(KERN_ERR "New Head\n");
         head=new;
       }
       else
       {
         prev->next = new;
-       //printk(KERN_ERR "Node Inserted\n");
       }
     }
-   //printk(KERN_ERR "Mutex unlock\n");
     mutex_unlock(&linklist);
     return 0;
 }
@@ -120,7 +111,6 @@ __u64 tnpheap_start_tx(struct tnpheap_cmd __user *user_cmd)
 {
     struct tnpheap_cmd cmd;
     __u64 ret=0;
-    //printk(KERN_ERR "Kern tnpheap_start_tx\n");
     if (copy_from_user(&cmd, user_cmd, sizeof(cmd)))
     {
         return -1 ;
@@ -129,7 +119,6 @@ __u64 tnpheap_start_tx(struct tnpheap_cmd __user *user_cmd)
     trxid++;
     ret=trxid;
     mutex_unlock(&lock);
-   //printk(KERN_ERR "Kern tnpheap_start_tx id %lu\n",ret);
     return ret;
 }
 
@@ -138,31 +127,19 @@ __u64 tnpheap_commit(struct tnpheap_cmd __user *user_cmd)
     struct tnpheap_cmd cmd;
     struct ll *temp;
     __u64 ret=0;
-   //printk(KERN_ERR "Kern tnpheap_commit\n");
     if (copy_from_user(&cmd, user_cmd, sizeof(cmd)))
     {
         return -1 ;
     }
-    // mutex_lock(&commit_lock);
-    // if(commitid>cmd.txid)
-    // {
-    //   mutex_unlock(&commit_lock);
-    //   return 1;
-    // }
-    // commitid = cmd.txid;
-    // mutex_unlock(&commit_lock);
     mutex_lock(&linklist);
     temp=head;
     while(temp!=NULL)
     {
-     //printk(KERN_ERR "offset in temp %lu and in cmd %lu with version %lu and %lu\n", temp->node->offset, cmd.offset, temp->node->version, cmd.version);
       if(temp->node->offset==cmd.offset)
       {
-       //printk(KERN_ERR "Version in temp %lu and in cmd %lu\n", temp->node->version, cmd.version);
         if(temp->node->version==cmd.version)
         {
           temp->node->version++;
-         //printk(KERN_ERR "Commit lock released for offset %lu with new version as %lu\n", temp->node->offset, temp->node->version);
           mutex_unlock(&linklist);
           return 0;
         }
@@ -174,7 +151,6 @@ __u64 tnpheap_commit(struct tnpheap_cmd __user *user_cmd)
       }
       temp = temp->next;
     }
-   //printk(KERN_ERR "Commit lock released\n");
     mutex_unlock(&linklist);
     return 1;
 }
@@ -196,7 +172,6 @@ int tnpheap_commit_unlock(struct tnpheap_cmd __user *user_cmd)
 __u64 tnpheap_ioctl(struct file *filp, unsigned int cmd,
                                 unsigned long arg)
 {
-    //printk(KERN_ERR "Kern tnpheap_ioctl\n");
     switch (cmd) {
     case TNPHEAP_IOCTL_START_TX:
         return tnpheap_start_tx((void __user *) arg);

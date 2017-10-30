@@ -50,6 +50,8 @@ __u64 tnpheap_get_version(int npheap_dev, int tnpheap_dev, __u64 offset)
           }
           temp = temp->next;
         }
+
+        return 0;
 }
 
 
@@ -80,7 +82,9 @@ void *tnpheap_alloc(int npheap_dev, int tnpheap_dev, __u64 offset, __u64 size)
               if (strcmp(npheap_alloc(npheap_dev, offset, 8192), temp->buffer)!=0)
               {
                 memcpy(temp->buffer, npheap_alloc(npheap_dev, offset, 8192), 8192);
+                // printf("gadbad");
                 try--;
+                // return 1;
               }
               else
                 break;
@@ -120,6 +124,8 @@ void *tnpheap_alloc(int npheap_dev, int tnpheap_dev, __u64 offset, __u64 size)
             {
               memcpy(new->buffer, npheap_alloc(npheap_dev, offset, 8192), 8192);
               try--;
+               // printf("gadbad");
+              // return 1;
             }
             else
               break;
@@ -160,12 +166,16 @@ int tnpheap_commit(int npheap_dev, int tnpheap_dev)
         temp=head;
         while(temp!=NULL)
         {
+            printf("inside while");
+           if (strcmp(npheap_alloc(npheap_dev, temp->cmd.offset, 8192), temp->buffer)!=0)
             if (ioctl(tnpheap_dev, TNPHEAP_IOCTL_COMMIT, &(temp->cmd))==1)
             {
              printf("All locks released pid %lu\n", getpid());
-	     ioctl(tnpheap_dev, TNPHEAP_IOCTL_COMMIT_UNLOCK, &(cmd));
+	           ioctl(tnpheap_dev, TNPHEAP_IOCTL_COMMIT_UNLOCK, &(cmd));
              return 1;
             }
+
+            printf("doing manual copy");
             char *ptr;
             ptr = npheap_alloc(npheap_dev, temp->cmd.offset, 8192);
             for(int i=0;i<8192;i++)
@@ -177,9 +187,12 @@ int tnpheap_commit(int npheap_dev, int tnpheap_dev)
           {
             if (strcmp(npheap_alloc(npheap_dev, temp->cmd.offset, 8192), temp->buffer)!=0)
             {
-              memcpy(npheap_alloc(npheap_dev, temp->cmd.offset, 8192), temp->buffer, 8192);
-              printf("Data not matched for offset %d pid %lu\n", temp->cmd.offset, getpid());
-              try--;
+               memcpy(npheap_alloc(npheap_dev, temp->cmd.offset, 8192), temp->buffer, 8192);
+              // printf("Data not matched for offset %d pid %lu\n", temp->cmd.offset, getpid());
+               try--;
+              // printf("gadbad2");
+              ioctl(tnpheap_dev, TNPHEAP_IOCTL_COMMIT_UNLOCK, &(cmd));
+              return 1;
             }
             else
               break;
@@ -188,6 +201,8 @@ int tnpheap_commit(int npheap_dev, int tnpheap_dev)
           temp = temp->next;
         }
         // Release lock
+
+        printf("commit %d\n",getpid());
 	       ioctl(tnpheap_dev, TNPHEAP_IOCTL_COMMIT_UNLOCK, &(cmd));
         return 0;
 }

@@ -152,7 +152,7 @@ __u64 tnpheap_start_tx(int npheap_dev, int tnpheap_dev)
         struct timeval current_time;
         gettimeofday(&current_time,NULL);
         msec_time = current_time.tv_usec + current_time.tv_sec*1000000;
-        printf("Tranx id %lu for pid %lu %llu\n", txid, getpid(), msec_time);
+        // printf("Tranx id %lu for pid %lu %llu\n", txid, getpid(), msec_time);
         return txid;
 }
 
@@ -161,21 +161,21 @@ int tnpheap_commit(int npheap_dev, int tnpheap_dev)
         struct user_ll *temp=head, *temp2=head;
         // Assuming all process requests the offset in same order which isn't.
         // Acquire lock on all offsets using npheap_lock
-       printf("All locks acquired head %lu pid %lu\n", head->cmd.offset, getpid());
+       // printf("All locks acquired head %lu pid %lu\n", head->cmd.offset, getpid());
         // Do commit work
         temp=head;
         while(temp!=NULL)
         {
-            printf("inside while");
+            // printf("inside while");
            if (strcmp(npheap_alloc(npheap_dev, temp->cmd.offset, 8192), temp->buffer)!=0)
             if (ioctl(tnpheap_dev, TNPHEAP_IOCTL_COMMIT, &(temp->cmd))==1)
             {
-             printf("All locks released pid %lu\n", getpid());
+             // printf("All locks released pid %lu\n", getpid());
 	           ioctl(tnpheap_dev, TNPHEAP_IOCTL_COMMIT_UNLOCK, &(cmd));
              return 1;
             }
 
-            printf("doing manual copy");
+            // printf("doing manual copy");
             char *ptr;
             ptr = npheap_alloc(npheap_dev, temp->cmd.offset, 8192);
             for(int i=0;i<8192;i++)
@@ -202,7 +202,7 @@ int tnpheap_commit(int npheap_dev, int tnpheap_dev)
         }
         // Release lock
 
-        printf("commit %d\n",getpid());
+        // printf("commit %d\n",getpid());
 	       ioctl(tnpheap_dev, TNPHEAP_IOCTL_COMMIT_UNLOCK, &(cmd));
         return 0;
 }
